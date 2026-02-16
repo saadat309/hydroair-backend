@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_chatbot_site_pages",
+  "info": {
+    "displayName": "Site Page",
+    "description": "Page descriptions for Chatbot navigation"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "path": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  }
+}

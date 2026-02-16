@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "support_tickets",
+  "info": {
+    "singularName": "support-ticket",
+    "pluralName": "support-tickets",
+    "displayName": "Support Ticket",
+    "description": "Customer support tickets"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "subject": {
+      "type": "string",
+      "required": true
+    },
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "ticketStatus": {
+      "type": "enumeration",
+      "default": "open",
+      "enum": [
+        "open",
+        "in-progress",
+        "closed"
+      ]
+    },
+    "ticketId": {
+      "type": "string",
+      "unique": true
+    },
+    "language": {
+      "type": "string"
+    },
+    "conversation": {
+      "type": "component",
+      "component": "ticket.reply",
+      "repeatable": true
+    }
+  }
+}

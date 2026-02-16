@@ -1,0 +1,55 @@
+{
+  "kind": "singleType",
+  "collectionName": "chatbot_contexts",
+  "info": {
+    "singularName": "chatbot-context",
+    "pluralName": "chatbot-contexts",
+    "displayName": "Chatbot Context",
+    "description": "Admin managed chatbot context"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "systemPrompt": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "blocks",
+      "required": true
+    },
+    "faqs": {
+      "type": "component",
+      "repeatable": true,
+      "component": "chatbot.faq"
+    },
+    "orderingGuide": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "blocks"
+    },
+    "customNotes": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "blocks"
+    },
+    "sitePages": {
+      "type": "component",
+      "repeatable": true,
+      "component": "chatbot.site-page"
+    }
+  }
+}

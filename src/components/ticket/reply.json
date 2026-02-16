@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_ticket_replies",
+  "info": {
+    "displayName": "Reply",
+    "icon": "message",
+    "description": "Ticket reply"
+  },
+  "options": {},
+  "attributes": {
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "author": {
+      "type": "enumeration",
+      "required": true,
+      "default": "admin",
+      "enum": [
+        "admin",
+        "user"
+      ]
+    }
+  }
+}
