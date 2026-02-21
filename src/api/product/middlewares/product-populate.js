@@ -6,10 +6,14 @@ module.exports = (config, { strapi }) => {
         category: {
           fields: ['name', 'slug']
         },
-        image: {
+        images: {
           fields: ['url', 'alternativeText', 'formats']
         },
-        addFeatures: true
+        addFeatures: true,
+        seo: true,
+        tags: {
+          fields: ['name', 'slug']
+        }
       };
     }
 
@@ -18,10 +22,13 @@ module.exports = (config, { strapi }) => {
       ctx.query.fields = [
         'name',
         'slug',
+        'SKU',
         'shortDescription',
         'description',
         'price',
-        'inStock'
+        'old_price',
+        'inStock',
+        'international_currency'
       ];
     }
 

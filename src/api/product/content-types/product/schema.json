@@ -30,13 +30,40 @@
       "targetField": "name",
       "required": true
     },
-    "description": {
-      "type": "blocks",
+    "SKU": {
+      "type": "uid",
+      "required": false
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "products"
+    },
+    "inStock": {
+      "type": "boolean",
+      "default": true
+    },
+    "price": {
+      "type": "decimal",
+      "required": true
+    },
+    "old_price": {
+      "type": "biginteger",
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       }
+    },
+    "international_currency": {
+      "type": "boolean",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": true
     },
     "shortDescription": {
       "type": "text",
@@ -46,27 +73,27 @@
         }
       }
     },
-    "price": {
-      "type": "decimal",
-      "required": true
+    "description": {
+      "type": "blocks",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
-    "image": {
+    "images": {
       "type": "media",
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "allowedTypes": [
         "images"
       ]
     },
-    "inStock": {
-      "type": "boolean",
-      "default": true
-    },
-    "category": {
+    "tags": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::category.category",
-      "inversedBy": "products"
+      "relation": "manyToMany",
+      "target": "api::tag.tag",
+      "mappedBy": "products"
     },
     "addFeatures": {
       "type": "component",
@@ -77,6 +104,27 @@
       },
       "component": "product-components.features",
       "repeatable": true
+    },
+    "related_products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product.product"
+    },
+    "FAQs": {
+      "type": "component",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "component": "products.faq",
+      "repeatable": true
+    },
+    "reviews": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::review.review",
+      "mappedBy": "product"
     },
     "seo": {
       "type": "component",

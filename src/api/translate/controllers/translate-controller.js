@@ -32,25 +32,42 @@ module.exports = {
         fieldsToTranslate.description = sourceEntry.description;
         fieldsToTranslate.shortDescription = sourceEntry.shortDescription;
         fieldsToTranslate.addFeatures = sourceEntry.addFeatures; // Repeating component
+        fieldsToTranslate.FAQs = sourceEntry.FAQs; // Repeating component
         
-        // Sync non-translatable fields
-        ['slug', 'price', 'inStock'].forEach(f => { if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f] });
+        // Sync non-translatable fields or fields that should stay same
+        ['slug', 'SKU', 'price', 'old_price', 'inStock', 'international_currency'].forEach(f => { 
+          if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f];
+        });
         
-        // Sync Relation: Category
-        // In Strapi 5, we just need the documentId of the related item
+        // Sync Media: Images
+        if (sourceEntry.images) {
+          syncedFields.images = sourceEntry.images.map(img => img.id);
+        }
+
+        // Sync Relations
         if (sourceEntry.category) {
           syncedFields.category = sourceEntry.category.documentId;
         }
+        
+        if (sourceEntry.tags) {
+          syncedFields.tags = sourceEntry.tags.map(t => t.documentId);
+        }
+
+        if (sourceEntry.related_products) {
+          syncedFields.related_products = sourceEntry.related_products.map(p => p.documentId);
+        }
+
       } else if (uid === 'api::category.category') {
         fieldsToTranslate.name = sourceEntry.name;
-        fieldsToTranslate.description = sourceEntry.description;
+        fieldsToTranslate.seo = sourceEntry.seo;
         
         ['slug'].forEach(f => { if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f] });
         
-        // Image is a media field, usually synced
-        if (sourceEntry.image) {
-          syncedFields.image = sourceEntry.image.id;
-        }
+      } else if (uid === 'api::tag.tag') {
+        fieldsToTranslate.name = sourceEntry.name;
+        
+        ['slug'].forEach(f => { if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f] });
+        
       } else {
         // Fallback: try to translate common fields
         ['name', 'title', 'description', 'content'].forEach(field => {

@@ -59,6 +59,29 @@ export interface ProductComponentsFeatures extends Struct.ComponentSchema {
   };
 }
 
+export interface ProductComponentsTag extends Struct.ComponentSchema {
+  collectionName: 'components_product_components_tags';
+  info: {
+    displayName: 'tag';
+    icon: 'priceTag';
+  };
+  attributes: {
+    tag_name: Schema.Attribute.String;
+  };
+}
+
+export interface ProductsFaq extends Struct.ComponentSchema {
+  collectionName: 'components_products_faqs';
+  info: {
+    displayName: 'Faq';
+    icon: 'question';
+  };
+  attributes: {
+    Answer: Schema.Attribute.Text;
+    Question: Schema.Attribute.String;
+  };
+}
+
 export interface SharedOpenGraph extends Struct.ComponentSchema {
   collectionName: 'components_shared_open_graphs';
   info: {
@@ -131,6 +154,8 @@ declare module '@strapi/strapi' {
       'chatbot.faq': ChatbotFaq;
       'chatbot.site-page': ChatbotSitePage;
       'product-components.features': ProductComponentsFeatures;
+      'product-components.tag': ProductComponentsTag;
+      'products.faq': ProductsFaq;
       'shared.open-graph': SharedOpenGraph;
       'shared.seo': SharedSeo;
       'ticket.reply': TicketReply;
