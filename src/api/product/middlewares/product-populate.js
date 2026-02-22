@@ -1,35 +1,81 @@
 module.exports = (config, { strapi }) => {
   return async (ctx, next) => {
-    // Only apply if no custom populate is specified
+    // Always ensure images are populated with the right fields
     if (!ctx.query.populate) {
       ctx.query.populate = {
         category: {
-          fields: ['name', 'slug']
+          fields: ["name", "slug"],
+        },
+        tags: {
+          fields: ["name", "slug"],
         },
         images: {
-          fields: ['url', 'alternativeText', 'formats']
+          fields: ["url", "alternativeText", "formats"],
         },
-        addFeatures: true,
-        seo: true,
-        tags: {
-          fields: ['name', 'slug']
-        }
+        related_products: {
+          fields: ["name", "slug", "price"],
+          populate: {
+            images: {
+              fields: ["url", "alternativeText", "formats"],
+            },
+          },
+        },
+        reviews: {
+          fields: [
+            "name",
+            "slug",
+            "rating",
+            "review",
+            "is_approved",
+            "createdAt",
+          ],
+        },
+        FAQs: {
+          fields: ["Question", "Answer"],
+        },
       };
-    }
-
-    // Limit fields returned by default
-    if (!ctx.query.fields) {
-      ctx.query.fields = [
-        'name',
-        'slug',
-        'SKU',
-        'shortDescription',
-        'description',
-        'price',
-        'old_price',
-        'inStock',
-        'international_currency'
-      ];
+    } else if (ctx.query.populate === '*') {
+      // If populate is '*', add our specific fields for images
+      ctx.query.populate = {
+        category: {
+          fields: ["name", "slug"],
+        },
+        tags: {
+          fields: ["name", "slug"],
+        },
+        images: {
+          fields: ["url", "alternativeText", "formats"],
+        },
+        related_products: {
+          fields: ["name", "slug", "price"],
+          populate: {
+            images: {
+              fields: ["url", "alternativeText", "formats"],
+            },
+          },
+        },
+        reviews: {
+          fields: [
+            "name",
+            "slug",
+            "rating",
+            "review",
+            "is_approved",
+            "createdAt",
+          ],
+        },
+        FAQs: {
+          fields: ["Question", "Answer"],
+        },
+      };
+    } else if (typeof ctx.query.populate === 'object') {
+      // Merge: ensure images are populated with our fields
+      ctx.query.populate = {
+        ...ctx.query.populate,
+        images: {
+          fields: ["url", "alternativeText", "formats"],
+        },
+      };
     }
 
     await next();
