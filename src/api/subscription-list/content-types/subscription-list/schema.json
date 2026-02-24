@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "subscription_lists",
+  "info": {
+    "singularName": "subscription-list",
+    "pluralName": "subscription-lists",
+    "displayName": "Subscription List"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "email": {
+      "type": "email",
+      "required": true,
+      "unique": true
+    }
+  }
+}

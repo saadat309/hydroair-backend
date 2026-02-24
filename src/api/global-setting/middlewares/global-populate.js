@@ -6,7 +6,7 @@ module.exports = (config, { strapi }) => {
     strapi.log.info('In global-populate middleware.');
     ctx.query.populate = {
       featured_products: {
-        fields: ["name", "slug",],
+        fields: ['name', 'slug'],
       }
     };
     await next();

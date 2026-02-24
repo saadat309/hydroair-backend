@@ -33,6 +33,12 @@ module.exports = (config, { strapi }) => {
         FAQs: {
           fields: ["Question", "Answer"],
         },
+        addFeatures: {
+          fields: ["Feature"],
+        },
+        seo: {
+          fields: ["metaRobots", "keywords"],
+        },
       };
     } else if (ctx.query.populate === '*') {
       // If populate is '*', add our specific fields for images
@@ -66,6 +72,17 @@ module.exports = (config, { strapi }) => {
         },
         FAQs: {
           fields: ["Question", "Answer"],
+        },
+      };
+    } else if (Array.isArray(ctx.query.populate)) {
+      const populateObj = {};
+      ctx.query.populate.forEach(val => {
+        populateObj[val] = true;
+      });
+      ctx.query.populate = {
+        ...populateObj,
+        images: {
+          fields: ["url", "alternativeText", "formats"],
         },
       };
     } else if (typeof ctx.query.populate === 'object') {
