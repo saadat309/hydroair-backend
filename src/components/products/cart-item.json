@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_products_cart_items",
+  "info": {
+    "displayName": "Cart Item",
+    "icon": "shoppingCart"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "product": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product.product"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "subTotal": {
+      "type": "biginteger"
+    }
+  },
+  "config": {}
+}

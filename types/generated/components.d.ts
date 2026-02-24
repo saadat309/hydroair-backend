@@ -70,6 +70,20 @@ export interface ProductComponentsTag extends Struct.ComponentSchema {
   };
 }
 
+export interface ProductsCartItem extends Struct.ComponentSchema {
+  collectionName: 'components_products_cart_items';
+  info: {
+    displayName: 'Cart Item';
+    icon: 'shoppingCart';
+  };
+  attributes: {
+    product: Schema.Attribute.Relation<'oneToOne', 'api::product.product'>;
+    quantity: Schema.Attribute.Integer;
+    subTotal: Schema.Attribute.BigInteger;
+    title: Schema.Attribute.String;
+  };
+}
+
 export interface ProductsFaq extends Struct.ComponentSchema {
   collectionName: 'components_products_faqs';
   info: {
@@ -82,26 +96,16 @@ export interface ProductsFaq extends Struct.ComponentSchema {
   };
 }
 
-export interface SharedOpenGraph extends Struct.ComponentSchema {
-  collectionName: 'components_shared_open_graphs';
+export interface ProductsStatusEvent extends Struct.ComponentSchema {
+  collectionName: 'components_products_status_events';
   info: {
-    displayName: 'openGraph';
-    icon: 'project-diagram';
+    displayName: 'Status Event';
+    icon: 'cast';
   };
   attributes: {
-    ogDescription: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 200;
-      }>;
-    ogImage: Schema.Attribute.Media<'images'>;
-    ogTitle: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 70;
-      }>;
-    ogType: Schema.Attribute.String;
-    ogUrl: Schema.Attribute.String;
+    message: Schema.Attribute.Text;
+    order_status: Schema.Attribute.String;
+    timestamp: Schema.Attribute.DateTime;
   };
 }
 
@@ -112,24 +116,8 @@ export interface SharedSeo extends Struct.ComponentSchema {
     icon: 'search';
   };
   attributes: {
-    canonicalURL: Schema.Attribute.String;
     keywords: Schema.Attribute.Text;
-    metaDescription: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 160;
-        minLength: 50;
-      }>;
-    metaImage: Schema.Attribute.Media<'images'>;
     metaRobots: Schema.Attribute.String;
-    metaTitle: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 60;
-      }>;
-    metaViewport: Schema.Attribute.String;
-    openGraph: Schema.Attribute.Component<'shared.open-graph', false>;
-    structuredData: Schema.Attribute.JSON;
   };
 }
 
@@ -155,8 +143,9 @@ declare module '@strapi/strapi' {
       'chatbot.site-page': ChatbotSitePage;
       'product-components.features': ProductComponentsFeatures;
       'product-components.tag': ProductComponentsTag;
+      'products.cart-item': ProductsCartItem;
       'products.faq': ProductsFaq;
-      'shared.open-graph': SharedOpenGraph;
+      'products.status-event': ProductsStatusEvent;
       'shared.seo': SharedSeo;
       'ticket.reply': TicketReply;
     }

@@ -32,7 +32,7 @@
     },
     "SKU": {
       "type": "uid",
-      "required": false
+      "required": true
     },
     "category": {
       "type": "relation",

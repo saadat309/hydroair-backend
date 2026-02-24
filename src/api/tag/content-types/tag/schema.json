@@ -39,6 +39,15 @@
       "relation": "manyToMany",
       "target": "api::product.product",
       "inversedBy": "tags"
+    },
+    "display_as_Badge": {
+      "type": "boolean",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "default": false
     }
   }
 }

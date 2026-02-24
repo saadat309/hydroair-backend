@@ -18,7 +18,8 @@
     },
     "slug": {
       "type": "uid",
-      "targetField": "order_id"
+      "targetField": "order_id",
+      "required": true
     },
     "first_name": {
       "type": "string"
@@ -37,6 +38,38 @@
     },
     "postal_code": {
       "type": "string"
+    },
+    "cartItems": {
+      "type": "component",
+      "component": "products.cart-item",
+      "repeatable": true
+    },
+    "total_price": {
+      "type": "biginteger"
+    },
+    "currency": {
+      "type": "enumeration",
+      "default": "USD",
+      "enum": [
+        "USD",
+        "RUB",
+        "UZS"
+      ]
+    },
+    "order_status": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "confirmed",
+        "shipped",
+        "cancelled",
+        "returned",
+        "delivered"
+      ]
+    },
+    "email": {
+      "type": "email"
     }
   }
 }

@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_products_status_events",
+  "info": {
+    "displayName": "Status Event",
+    "icon": "cast"
+  },
+  "options": {},
+  "attributes": {
+    "order_status": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "datetime"
+    },
+    "message": {
+      "type": "text"
+    }
+  },
+  "config": {}
+}

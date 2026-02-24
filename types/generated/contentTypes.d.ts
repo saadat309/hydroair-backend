@@ -490,42 +490,55 @@ export interface ApiChatbotContextChatbotContext
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    customNotes: Schema.Attribute.Blocks;
+    faqs: Schema.Attribute.Component<'chatbot.faq', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::chatbot-context.chatbot-context'
+    > &
+      Schema.Attribute.Private;
+    orderingGuide: Schema.Attribute.Blocks;
+    publishedAt: Schema.Attribute.DateTime;
+    sitePages: Schema.Attribute.Component<'chatbot.site-page', true>;
+    systemPrompt: Schema.Attribute.Blocks & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiGlobalSettingGlobalSetting extends Struct.SingleTypeSchema {
+  collectionName: 'global_settings';
+  info: {
+    displayName: 'Global Setting';
+    pluralName: 'global-settings';
+    singularName: 'global-setting';
+  };
+  options: {
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    customNotes: Schema.Attribute.Blocks &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    faqs: Schema.Attribute.Component<'chatbot.faq', true>;
-    locale: Schema.Attribute.String;
+    featured_products: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::product.product'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::chatbot-context.chatbot-context'
-    >;
-    orderingGuide: Schema.Attribute.Blocks &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+      'api::global-setting.global-setting'
+    > &
+      Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    sitePages: Schema.Attribute.Component<'chatbot.site-page', true>;
-    systemPrompt: Schema.Attribute.Blocks &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    Show_Maintenance_Message: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -544,11 +557,15 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   };
   attributes: {
     address: Schema.Attribute.String;
+    cartItems: Schema.Attribute.Component<'products.cart-item', true>;
     city: Schema.Attribute.String;
     country: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    currency: Schema.Attribute.Enumeration<['USD', 'RUB', 'UZS']> &
+      Schema.Attribute.DefaultTo<'USD'>;
+    email: Schema.Attribute.Email;
     first_name: Schema.Attribute.String;
     last_name: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -557,9 +574,14 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     order_id: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    order_status: Schema.Attribute.Enumeration<
+      ['pending', 'confirmed', 'shipped', 'cancelled', 'returned', 'delivered']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     postal_code: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'order_id'>;
+    slug: Schema.Attribute.UID<'order_id'> & Schema.Attribute.Required;
+    total_price: Schema.Attribute.BigInteger;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -654,7 +676,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
           localized: true;
         };
       }>;
-    SKU: Schema.Attribute.UID;
+    SKU: Schema.Attribute.UID & Schema.Attribute.Required;
     slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
     tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
     updatedAt: Schema.Attribute.DateTime;
@@ -764,6 +786,13 @@ export interface ApiTagTag extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    display_as_Badge: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::tag.tag'>;
     name: Schema.Attribute.String &
@@ -1301,6 +1330,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::category.category': ApiCategoryCategory;
       'api::chatbot-context.chatbot-context': ApiChatbotContextChatbotContext;
+      'api::global-setting.global-setting': ApiGlobalSettingGlobalSetting;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'api::review.review': ApiReviewReview;

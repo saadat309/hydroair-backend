@@ -7,7 +7,7 @@ module.exports = (config, { strapi }) => {
           fields: ["name", "slug"],
         },
         tags: {
-          fields: ["name", "slug"],
+          fields: ["name", "slug", "display_as_Badge"],
         },
         images: {
           fields: ["url", "alternativeText", "formats"],
@@ -41,7 +41,7 @@ module.exports = (config, { strapi }) => {
           fields: ["name", "slug"],
         },
         tags: {
-          fields: ["name", "slug"],
+          fields: ["name", "slug", "display_as_Badge"],
         },
         images: {
           fields: ["url", "alternativeText", "formats"],
