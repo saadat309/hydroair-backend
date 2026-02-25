@@ -4,55 +4,61 @@ const SOURCE_LOCALE = 'en';
 module.exports = {
   async beforeCreate(event) {
     const { data } = event.params;
-    const { documentId } = event.params; // documentId is present when creating a new locale version
+    const documentId = event.params.documentId || data.documentId;
     
-    // 1. If we have a documentId, it's a new locale for an existing document.
-    // We SHOULD inherit the SKU from the base document if not provided.
-    // If provided (Strapi 5 often sends all non-localized fields), we DON'T want to null it.
-    if (documentId) {
-      strapi.log.debug(`Creating new locale for document ${documentId}. SKU logic skipped to allow inheritance/sync.`);
-      return; 
-    }
+    strapi.log.debug(`beforeCreate: SKU="${data.SKU}", documentId="${documentId}"`);
 
-    // 2. Handle SKU uniqueness during creation or cloning (New Document)
-    if (data.SKU) {
+    // 1. Handle existing SKU (Inherited from other locales or manual entry)
+    if (data.SKU && data.SKU !== '') {
       try {
-        const existing = await strapi.documents('api::product.product').findFirst({
-          filters: { SKU: { $eq: data.SKU } },
-          locale: SOURCE_LOCALE
+        // ONLY regenerate if this SKU belongs to a DIFFERENT documentId
+        // This prevents incrementing when creating new locales for the same product
+        const duplicate = await strapi.documents('api::product.product').findFirst({
+          filters: { 
+            SKU: data.SKU,
+            ...(documentId ? { documentId: { $ne: documentId } } : {})
+          },
+          status: 'draft'
         });
         
-        // If SKU exists in a DIFFERENT document, it's a clone. Regenerate.
-        if (existing) {
-          strapi.log.debug(`Duplicate SKU ${data.SKU} detected in another document. Regenerating for clone...`);
-          data.SKU = null;
+        if (!duplicate) {
+          strapi.log.debug(`SKU ${data.SKU} is valid for this document. Keeping it.`);
+          return; // Stop here, SKU is fine
         }
+
+        strapi.log.debug(`Duplicate SKU ${data.SKU} detected in ANOTHER document. Regenerating...`);
+        data.SKU = null; 
       } catch (error) {
         strapi.log.error('Error checking SKU uniqueness:', error);
       }
     }
 
-    // 3. Generate new SKU if missing (Base English entry)
-    if (!data.SKU) {
+    // 2. Generate new SKU if missing or cleared above (New Product or Clone)
+    if (!data.SKU || data.SKU === '') {
       try {
+        strapi.log.debug('Generating new SKU...');
         const products = await strapi.documents('api::product.product').findMany({
           fields: ['SKU'],
-          sort: { SKU: 'desc' },
+          sort: 'SKU:desc',
           limit: 1,
-          locale: SOURCE_LOCALE
+          locale: SOURCE_LOCALE,
+          status: 'draft'
         });
 
         let nextSkuNumber = 1;
         if (products && products.length > 0) {
           const latestSku = products[0].SKU;
+          strapi.log.debug(`Latest SKU found in DB: ${latestSku}`);
           const match = latestSku ? latestSku.match(/HAT-(\d{5})/) : null;
           if (match && match[1]) {
             nextSkuNumber = parseInt(match[1], 10) + 1;
           }
+        } else {
+          strapi.log.debug('No existing products found for SKU generation base.');
         }
 
         data.SKU = `HAT-${String(nextSkuNumber).padStart(5, '0')}`;
-        strapi.log.debug(`Generated new SKU: ${data.SKU}`);
+        strapi.log.info(`Auto-generated SKU: ${data.SKU}`);
       } catch (error) {
         strapi.log.error('Error generating SKU in beforeCreate:', error);
       }

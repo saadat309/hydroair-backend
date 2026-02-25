@@ -24,7 +24,6 @@ module.exports = {
             data: {
               name: `${name} (${targetLocale})`,
               locale: targetLocale,
-              slug: result.slug
             },
             status: 'draft'
           });

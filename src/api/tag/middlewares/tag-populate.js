@@ -44,7 +44,8 @@ module.exports = (config, { strapi }) => {
       ctx.query.fields = [
         'name',
         'slug',
-        'short_description'
+        'short_description',
+        'display_as_Badge'
       ];
     }
 

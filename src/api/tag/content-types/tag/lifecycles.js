@@ -29,8 +29,6 @@ module.exports = {
             data: {
               name: `${name} (${targetLocale})`,
               locale: targetLocale,
-              slug: sourceEntry.slug,
-              products: sourceEntry.products?.map(p => p.documentId)
             },
             status: 'draft'
           });

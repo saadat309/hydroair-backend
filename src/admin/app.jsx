@@ -1,4 +1,6 @@
 import TranslateButton from './components/TranslateButton.jsx';
+import GenerateSeoButton from './components/GenerateSeoButton.jsx';
+import SyncButton from './components/SyncButton.jsx';
 import AuthLogo from './extensions/logo.svg';
 import MenuLogo from './extensions/logo.svg';
 import favicon from './extensions/favicon.png';
@@ -67,10 +69,19 @@ export default {
       subtree: true,
     });
 
-    console.log('Admin app bootstrap - Registering TranslateButton');
+    app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
+      name: 'sync-button',
+      Component: SyncButton,
+    });
+
     app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
       name: 'translate-button',
       Component: TranslateButton,
+    });
+
+    app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
+      name: 'generate-seo-button',
+      Component: GenerateSeoButton,
     });
   },
 };

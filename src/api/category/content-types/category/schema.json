@@ -31,6 +31,14 @@
       "targetField": "name",
       "required": true
     },
+    "short_description": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
     "products": {
       "type": "relation",
       "relation": "oneToMany",

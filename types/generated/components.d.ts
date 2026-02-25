@@ -112,12 +112,19 @@ export interface ProductsStatusEvent extends Struct.ComponentSchema {
 export interface SharedSeo extends Struct.ComponentSchema {
   collectionName: 'components_shared_seos';
   info: {
+    description: 'Professional SEO metadata for ranking and social sharing';
     displayName: 'seo';
     icon: 'search';
   };
   attributes: {
+    canonical_url: Schema.Attribute.String;
     keywords: Schema.Attribute.Text;
-    metaRobots: Schema.Attribute.String;
+    og_image: Schema.Attribute.Media<'images'>;
+    page_description: Schema.Attribute.Text;
+    page_title: Schema.Attribute.String;
+    robots: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'index, follow'>;
+    structured_data: Schema.Attribute.JSON;
   };
 }
 

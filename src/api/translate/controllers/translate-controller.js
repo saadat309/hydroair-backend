@@ -1,87 +1,65 @@
 'use strict';
 
 module.exports = {
+  // Shared helper to check if a document exists in a specific locale
+  async getValidRelationId(targetUid, docId, targetLoc) {
+    if (!docId) return null;
+    
+    const contentType = strapi.contentType(targetUid);
+    const isLocalized = contentType.pluginOptions?.i18n?.localized === true;
+
+    if (!isLocalized) return docId; 
+
+    try {
+      const exists = await strapi.documents(targetUid).findOne({
+        documentId: docId,
+        locale: targetLoc,
+        status: 'draft'
+      });
+      return exists ? docId : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
   async translate(ctx) {
-    strapi.log.debug('Translate Request Body:', JSON.stringify(ctx.request.body));
     const { uid, documentId, targetLocale, sourceLocale = 'en' } = ctx.request.body;
 
     if (!uid || !documentId || !targetLocale) {
-      strapi.log.warn('Missing parameters:', { uid, documentId, targetLocale });
-      return ctx.badRequest('Missing required parameters', { uid, documentId, targetLocale });
+      return ctx.badRequest('Missing required parameters');
     }
 
     try {
-      strapi.log.info(`[Translate] Starting translation for ${uid} (docId: ${documentId}) to ${targetLocale}`);
-      // 1. Get the source document (e.g. English) with relations populated
+      strapi.log.info(`[Translate] AI Translating ${uid} (docId: ${documentId}) to ${targetLocale}`);
+      
       const sourceEntry = await strapi.documents(uid).findFirst({
         filters: { documentId: { $eq: documentId }, locale: { $eq: sourceLocale } },
-        populate: '*', // Populate components and relations
+        populate: '*',
       });
 
-      if (!sourceEntry) {
-        strapi.log.warn(`[Translate] Source document not found: ${uid} ${documentId} ${sourceLocale}`);
-        return ctx.notFound(`Source document not found for locale ${sourceLocale}`);
-      }
+      if (!sourceEntry) return ctx.notFound(`Source document not found for locale ${sourceLocale}`);
 
-      // 2. Identify fields to translate
       const fieldsToTranslate = {};
-      const syncedFields = {};
       
       if (uid === 'api::product.product') {
         fieldsToTranslate.name = sourceEntry.name;
         fieldsToTranslate.description = sourceEntry.description;
         fieldsToTranslate.shortDescription = sourceEntry.shortDescription;
-        fieldsToTranslate.addFeatures = sourceEntry.addFeatures; // Repeating component
-        fieldsToTranslate.FAQs = sourceEntry.FAQs; // Repeating component
-        
-        // Sync non-translatable fields or fields that should stay same
-        ['slug', 'SKU', 'price', 'old_price', 'inStock', 'international_currency'].forEach(f => { 
-          if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f];
-        });
-        
-        // Sync Media: Images
-        if (sourceEntry.images) {
-          syncedFields.images = sourceEntry.images.map(img => img.id);
-        }
-
-        // Sync Relations
-        if (sourceEntry.category) {
-          syncedFields.category = sourceEntry.category.documentId;
-        }
-        
-        if (sourceEntry.tags) {
-          syncedFields.tags = sourceEntry.tags.map(t => t.documentId);
-        }
-
-        if (sourceEntry.related_products) {
-          syncedFields.related_products = sourceEntry.related_products.map(p => p.documentId);
-        }
-
-      } else if (uid === 'api::category.category') {
+        fieldsToTranslate.addFeatures = sourceEntry.addFeatures;
+        fieldsToTranslate.FAQs = sourceEntry.FAQs;
+      } else if (uid === 'api::category.category' || uid === 'api::tag.tag') {
         fieldsToTranslate.name = sourceEntry.name;
-        fieldsToTranslate.seo = sourceEntry.seo;
-        
-        ['slug'].forEach(f => { if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f] });
-        
-      } else if (uid === 'api::tag.tag') {
-        fieldsToTranslate.name = sourceEntry.name;
-        
-        ['slug'].forEach(f => { if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f] });
-        
+        fieldsToTranslate.short_description = sourceEntry.short_description;
       } else {
-        // Fallback: try to translate common fields
-        ['name', 'title', 'description', 'content'].forEach(field => {
-          if (sourceEntry[field]) fieldsToTranslate[field] = sourceEntry[field];
+        ['name', 'title', 'description', 'content'].forEach(f => {
+          if (sourceEntry[f]) fieldsToTranslate[f] = sourceEntry[f];
         });
       }
 
-      strapi.log.debug(`[Translate] Fields to translate: ${Object.keys(fieldsToTranslate).join(', ')}`);
-
-      // 3. Translate the fields
       const translateService = strapi.service('api::translate.gemini');
       const translatedData = await translateService.translateObject(fieldsToTranslate, targetLocale);
 
-      // Helper to remove IDs from nested objects (components) to avoid conflicts in new locales
+      // Helper to remove IDs from nested objects
       const removeIds = (obj) => {
         if (Array.isArray(obj)) return obj.map(removeIds);
         if (obj && typeof obj === 'object') {
@@ -95,27 +73,193 @@ module.exports = {
         return obj;
       };
 
-      const cleanTranslatedData = removeIds(translatedData);
-
-      strapi.log.info(`[Translate] Successfully translated fields for ${uid}`);
-
-      // 4. Update or create the target locale entry
-      strapi.log.info(`[Translate] Updating/Creating locale ${targetLocale} for document ${documentId}`);
-      
       const result = await strapi.documents(uid).update({
-        documentId: documentId,
+        documentId,
         locale: targetLocale,
-        data: {
-          ...syncedFields,
-          ...cleanTranslatedData,
-        },
+        data: removeIds(translatedData),
         status: 'draft',
       });
 
       return { data: result };
     } catch (error) {
-      strapi.log.error('Translation error detailed:', error);
-      return ctx.internalServerError(`Failed to translate content: ${error.message}`);
+      strapi.log.error('Translation error:', error);
+      return ctx.internalServerError(`Failed to translate: ${error.message}`);
+    }
+  },
+
+  async sync(ctx) {
+    const { uid, documentId, targetLocale, sourceLocale = 'en' } = ctx.request.body;
+
+    if (!uid || !documentId || !targetLocale) {
+      return ctx.badRequest('Missing required parameters');
+    }
+
+    try {
+      strapi.log.info(`[Sync] Updating common fields for ${uid} (docId: ${documentId}) from ${sourceLocale}`);
+      
+      const sourceEntry = await strapi.documents(uid).findFirst({
+        filters: { documentId: { $eq: documentId }, locale: { $eq: sourceLocale } },
+        populate: '*',
+      });
+
+      if (!sourceEntry) return ctx.notFound(`Source document not found`);
+
+      const syncedFields = {};
+      
+      if (uid === 'api::product.product') {
+        // ONLY sync non-translatable/common fields to avoid overwriting existing translations
+        ['SKU', 'price', 'old_price', 'inStock', 'international_currency'].forEach(f => { 
+          if(sourceEntry[f] !== undefined) syncedFields[f] = sourceEntry[f];
+        });
+        
+        // Sync Media (Global)
+        if (sourceEntry.images) syncedFields.images = sourceEntry.images.map(img => img.id);
+
+        // Sync Relations (Global) with locale validation
+        if (sourceEntry.category) {
+          syncedFields.category = await this.getValidRelationId('api::category.category', sourceEntry.category.documentId, targetLocale);
+        }
+        
+        if (sourceEntry.tags) {
+          const validTags = await Promise.all(
+            sourceEntry.tags.map(t => this.getValidRelationId('api::tag.tag', t.documentId, targetLocale))
+          );
+          syncedFields.tags = validTags.filter(Boolean);
+        }
+
+        if (sourceEntry.related_products) {
+          const validRelated = await Promise.all(
+            sourceEntry.related_products.map(p => this.getValidRelationId('api::product.product', p.documentId, targetLocale))
+          );
+          syncedFields.related_products = validRelated.filter(Boolean);
+        }
+
+        if (sourceEntry.reviews) syncedFields.reviews = sourceEntry.reviews.map(r => r.documentId);
+
+      } else {
+        // For Categories/Tags, currently relations are independent as per your request
+      }
+
+      const result = await strapi.documents(uid).update({
+        documentId,
+        locale: targetLocale,
+        data: syncedFields,
+        status: 'draft',
+      });
+
+      return { data: result };
+    } catch (error) {
+      strapi.log.error('Sync error:', error);
+      return ctx.internalServerError(`Failed to sync content: ${error.message}`);
+    }
+  },
+
+  async generateSeo(ctx) {
+    const { uid, documentId, locale } = ctx.request.body;
+
+    if (!uid || !documentId || !locale) {
+      return ctx.badRequest('Missing required parameters');
+    }
+
+    try {
+      strapi.log.info(`[SEO] Generating SEO for ${uid} (docId: ${documentId}) in ${locale}`);
+      
+      const entry = await strapi.documents(uid).findOne({
+        documentId,
+        locale,
+        populate: '*',
+      });
+
+      if (!entry) {
+        return ctx.notFound('Entry not found');
+      }
+
+      const translateService = strapi.service('api::translate.gemini');
+      const frontendUrl = process.env.FRONTEND_URL || 'https://hydroair.tech';
+
+      // Helper to extract plain text from blocks
+      const blocksToText = (blocks) => {
+        if (!Array.isArray(blocks)) return '';
+        return blocks
+          .map(block => block.children?.map(child => child.text).filter(Boolean).join(' '))
+          .filter(Boolean)
+          .join('\n');
+      };
+
+      const description = (entry.short_description && typeof entry.short_description === 'string' ? entry.short_description : '') || 
+                          (entry.shortDescription && typeof entry.shortDescription === 'string' ? entry.shortDescription : '') || 
+                          blocksToText(entry.description || entry.content || entry.shortDescription);
+      const name = entry.name || entry.title;
+
+      const prompt = `As a Senior SEO Specialist, generate high-ranking metadata for this entry.
+      Name: ${name}
+      Description: ${description}
+      Locale: ${locale}
+
+      GUARDRAILS:
+      1. page_title: Must be 50-60 characters. Use structure: "[Name] - [Category/Benefit] | HydroAir".
+      2. page_description: Compelling, 140-160 characters. End with a call to action.
+      3. NO EMOJIS, NO special symbols (like ★, █, »), NO ALL CAPS.
+      4. Keywords: Exactly 7 highly relevant keywords in ${locale}, comma-separated.
+      5. ALL content must be in ${locale}.
+
+      Return ONLY a raw JSON object with keys: "page_title", "page_description", "keywords". No markdown, no notes.`;
+
+      const aiResponse = await translateService.generateWithPrompt(prompt);
+      let seoData = {};
+      
+      if (aiResponse) {
+        try {
+          const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            seoData = JSON.parse(jsonMatch[0]);
+          }
+        } catch (e) {
+          strapi.log.error('Failed to parse AI SEO response:', aiResponse);
+        }
+      }
+
+      // Determine path prefix based on UID
+      let canonicalUrl = null;
+      if (entry.slug) {
+        if (uid === 'api::product.product') {
+          canonicalUrl = `${frontendUrl}/products/${entry.slug}`;
+        } else if (uid.includes('category')) {
+          // Matches your pattern: ?category=slug
+          canonicalUrl = `${frontendUrl}/products?category=${entry.slug}`;
+        } else if (uid.includes('tag')) {
+          // Matches your pattern: ?tag=slug
+          canonicalUrl = `${frontendUrl}/products?tag=${entry.slug}`;
+        }
+      }
+
+      // Pick first image for OG Image
+      let ogImageId = null;
+      if (entry.images && entry.images.length > 0) {
+        ogImageId = entry.images[0].id;
+      } else if (entry.image) {
+        ogImageId = entry.image.id;
+      }
+
+      const result = await strapi.documents(uid).update({
+        documentId,
+        locale,
+        data: {
+          seo: {
+            ...seoData,
+            canonical_url: canonicalUrl,
+            og_image: ogImageId,
+            robots: 'index, follow'
+          }
+        },
+        status: 'draft',
+      });
+
+      strapi.log.info(`[SEO] Successfully generated SEO for ${documentId}`);
+      return { data: result };
+    } catch (error) {
+      strapi.log.error('SEO generation error:', error);
+      return ctx.internalServerError(`Failed to generate SEO: ${error.message}`);
     }
   },
 };

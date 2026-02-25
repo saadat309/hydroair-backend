@@ -31,8 +31,7 @@
       "required": true
     },
     "SKU": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "category": {
       "type": "relation",

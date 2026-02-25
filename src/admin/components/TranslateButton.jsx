@@ -94,8 +94,9 @@ const TranslateButton = () => {
       onClick={handleTranslate}
       loading={isLoading}
       fullWidth
+      style={{ marginTop: '8px' }}
     >
-      Translate from English
+      AI Translate Content
     </Button>
   );
 };

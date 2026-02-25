@@ -2,17 +2,37 @@
   "collectionName": "components_shared_seos",
   "info": {
     "displayName": "seo",
-    "icon": "search"
+    "icon": "search",
+    "description": "Professional SEO metadata for ranking and social sharing"
   },
   "options": {},
   "attributes": {
-    "keywords": {
-      "type": "text",
-      "regex": "[^,]+"
+    "page_title": {
+      "type": "string"
     },
-    "metaRobots": {
+    "page_description": {
+      "type": "text"
+    },
+    "keywords": {
+      "type": "text"
+    },
+    "canonical_url": {
+      "type": "string"
+    },
+    "og_image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "structured_data": {
+      "type": "json"
+    },
+    "robots": {
       "type": "string",
-      "regex": "[^,]+"
+      "default": "index, follow"
     }
   }
 }

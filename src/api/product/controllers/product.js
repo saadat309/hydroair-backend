@@ -35,6 +35,10 @@ module.exports = createCoreController('api::product.product', ({ strapi }) => ({
     const enhancedData = data.map((product) => ({
       ...product,
       images: transformImages(product.images, product.name),
+      seo: product.seo ? {
+        ...product.seo,
+        og_image: transformImage(product.seo.og_image, product.name),
+      } : undefined,
     }));
 
     return { data: enhancedData, meta };
@@ -56,6 +60,10 @@ module.exports = createCoreController('api::product.product', ({ strapi }) => ({
     const enhancedData = {
       ...data,
       images: transformImages(data.images, data.name),
+      seo: data.seo ? {
+        ...data.seo,
+        og_image: transformImage(data.seo.og_image, data.name),
+      } : undefined,
     };
 
     return { data: enhancedData, meta };

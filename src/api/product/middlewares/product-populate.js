@@ -37,11 +37,15 @@ module.exports = (config, { strapi }) => {
           fields: ["Feature"],
         },
         seo: {
-          fields: ["metaRobots", "keywords"],
+          populate: {
+            og_image: {
+              fields: ["url", "alternativeText", "formats"],
+            },
+          },
         },
       };
     } else if (ctx.query.populate === '*') {
-      // If populate is '*', add our specific fields for images
+      // If populate is '*', add our specific fields for images and SEO
       ctx.query.populate = {
         category: {
           fields: ["name", "slug"],
@@ -72,6 +76,16 @@ module.exports = (config, { strapi }) => {
         },
         FAQs: {
           fields: ["Question", "Answer"],
+        },
+        addFeatures: {
+          fields: ["Feature"],
+        },
+        seo: {
+          populate: {
+            og_image: {
+              fields: ["url", "alternativeText", "formats"],
+            },
+          },
         },
       };
     } else if (Array.isArray(ctx.query.populate)) {
