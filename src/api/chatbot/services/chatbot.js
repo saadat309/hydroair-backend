@@ -3,13 +3,13 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 module.exports = ({ strapi }) => ({
   blocksToText(blocks) {
     if (!blocks) return "";
-    if (typeof blocks === 'string') return blocks;
+    if (typeof blocks === "string") return blocks;
     if (!Array.isArray(blocks)) return "";
-    
+
     return blocks
-      .map(block => {
-        if (block.type === 'paragraph' || block.type === 'heading') {
-          return block.children?.map(child => child.text).join("");
+      .map((block) => {
+        if (block.type === "paragraph" || block.type === "heading") {
+          return block.children?.map((child) => child.text).join("");
         }
         return "";
       })
@@ -27,7 +27,8 @@ module.exports = ({ strapi }) => ({
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemma-3-12b-it" });
 
-      const prompt = "Say 'Hello from Gemma 3!' and briefly explain what you can do.";
+      const prompt =
+        "Say 'Hello from Gemma 3!' and briefly explain what you can do.";
       console.log("[Gemini Test] Sending prompt:", prompt);
 
       const result = await model.generateContent(prompt);
@@ -42,7 +43,7 @@ module.exports = ({ strapi }) => ({
       return {
         success: true,
         response: text,
-        model: "gemma-3-12b-it"
+        model: "gemma-3-12b-it",
       };
     } catch (error) {
       console.error("[Gemini Test] Error:", error);
@@ -50,39 +51,45 @@ module.exports = ({ strapi }) => ({
     }
   },
 
-  async chat(message, history = [], locale = 'en') {
+  async chat(message, history = [], locale = "en") {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY not configured on server.");
     }
 
     // 1. Fetch Chatbot Context (Always in English/default locale)
-    const context = await strapi.documents('api::chatbot-context.chatbot-context').findFirst({
-      locale: 'en'
-    });
+    const context = await strapi
+      .documents("api::chatbot-context.chatbot-context")
+      .findFirst({
+        locale: "en",
+      });
 
     // 2. Fetch Products and Categories (Simplified for context)
-    const products = await strapi.documents('api::product.product').findMany({
+    const products = await strapi.documents("api::product.product").findMany({
       locale: locale,
-      fields: ['name', 'price', 'shortDescription', 'slug', 'inStock'],
-      populate: { category: { fields: ['name'] } }
+      fields: ["name", "price", "shortDescription", "slug", "inStock"],
+      populate: { category: { fields: ["name"] } },
     });
 
-    const categories = await strapi.documents('api::category.category').findMany({
-      locale: locale,
-      fields: ['name', 'slug']
-    });
+    const categories = await strapi
+      .documents("api::category.category")
+      .findMany({
+        locale: locale,
+        fields: ["name", "slug"],
+      });
 
     // 3. Detect Ticket ID in message
     let ticketContext = "";
     const ticketMatch = message.match(/TKT-\d{8}-[A-F0-9]{4}/i);
     if (ticketMatch) {
       const ticketId = ticketMatch[0].toUpperCase();
-      const ticket = await strapi.documents('api::support-ticket.support-ticket').findFirst({
-        filters: { ticketId: { $eq: ticketId } },
-        populate: ['replies']
-      });
-      
+      const ticket = await strapi
+        .documents("api::support-ticket.support-ticket")
+        .findFirst({
+          filters: { ticketId: { $eq: ticketId } },
+          populate: ["replies"],
+        });
+
       if (ticket) {
         ticketContext = `
           TICKET INFO FOUND:
@@ -90,7 +97,7 @@ module.exports = ({ strapi }) => ({
           Status: ${ticket.ticketStatus}
           Subject: ${ticket.subject}
           Created At: ${ticket.createdAt}
-          Last Reply: ${ticket.replies?.length > 0 ? ticket.replies[ticket.replies.length - 1].message : 'No replies yet'}
+          Last Reply: ${ticket.replies?.length > 0 ? ticket.replies[ticket.replies.length - 1].message : "No replies yet"}
           User can view full details here: /contact?ticket=${ticket.ticketId}
         `;
       } else {
@@ -100,25 +107,30 @@ module.exports = ({ strapi }) => ({
 
     // 4. Build System Prompt
     const brandName = context?.brandName || "HydroAir Technologies";
-    const contactEmail = context?.contactEmail || "support@hydroair.tech";
+    const contactEmail =
+      context?.contactEmail || "support@hydroairtechnologies.com";
     const contactPhone = context?.contactPhone || "+998 90 123 45 67";
-    
+
     // Format contact info as clickable markdown
     const emailLink = `[${contactEmail}](mailto:${contactEmail})`;
-    const phoneLink = `[${contactPhone}](tel:${contactPhone.replace(/\D/g, '')})`;
+    const phoneLink = `[${contactPhone}](tel:${contactPhone.replace(/\D/g, "")})`;
     const productsPageLink = `/products`;
     const contactPageLink = `/contact`;
-    
-    const systemPromptText = this.blocksToText(context?.systemPrompt) || "You are a helpful customer support assistant for a water filtration store.";
-    const orderingGuideText = this.blocksToText(context?.orderingGuide) || "Contact us to place an order.";
+
+    const systemPromptText =
+      this.blocksToText(context?.systemPrompt) ||
+      "You are a helpful customer support assistant for a water filtration store.";
+    const orderingGuideText =
+      this.blocksToText(context?.orderingGuide) ||
+      "Contact us to place an order.";
     const customNotesText = this.blocksToText(context?.customNotes) || "";
 
     const langMap = {
-      'en': 'English',
-      'ru': 'Russian',
-      'uz': 'Uzbek'
+      en: "English",
+      ru: "Russian",
+      uz: "Uzbek",
     };
-    const respondLang = langMap[locale] || 'English';
+    const respondLang = langMap[locale] || "English";
 
     const systemPrompt = `
       ${systemPromptText}
@@ -126,13 +138,13 @@ module.exports = ({ strapi }) => ({
       ${ticketContext}
 
       Our Products:
-      ${products.map(p => `- **${p.name}** ($${p.price}): ${p.shortDescription}`).join('\n')}
+      ${products.map((p) => `- **${p.name}** ($${p.price}): ${p.shortDescription}`).join("\n")}
       
       Our Categories:
-      ${categories.map(c => `- ${c.name}`).join('\n')}
+      ${categories.map((c) => `- ${c.name}`).join("\n")}
       
       FAQs:
-      ${JSON.stringify((context?.faqs || []).map(f => ({ q: f.question, a: f.answer })))}
+      ${JSON.stringify((context?.faqs || []).map((f) => ({ q: f.question, a: f.answer })))}
       
       Ordering Guide:
       ${orderingGuideText}
@@ -180,7 +192,10 @@ module.exports = ({ strapi }) => ({
       For Product Questions:
       "Great question! Let me tell you about our water filtration solutions:
       
-      ${products.slice(0, 3).map(p => `- **${p.name}** - ${p.shortDescription}`).join('\n')}
+      ${products
+        .slice(0, 3)
+        .map((p) => `- **${p.name}** - ${p.shortDescription}`)
+        .join("\n")}
       
       You can view all details and pricing on our [Products page](${productsPageLink}). Which one interests you most, or do you have specific requirements I can help with?"
     `;
@@ -192,13 +207,13 @@ module.exports = ({ strapi }) => ({
     // Filter history to ensure it starts with a user message (Gemini API requirement)
     // Remove any leading model messages (like the initial greeting)
     let filteredHistory = [...history];
-    while (filteredHistory.length > 0 && filteredHistory[0].role !== 'user') {
+    while (filteredHistory.length > 0 && filteredHistory[0].role !== "user") {
       filteredHistory.shift();
     }
 
     const chat = model.startChat({
-      history: filteredHistory.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
+      history: filteredHistory.map((msg) => ({
+        role: msg.role === "user" ? "user" : "model",
         parts: [{ text: msg.text }],
       })),
       generationConfig: {
@@ -209,9 +224,9 @@ module.exports = ({ strapi }) => ({
     // Prepend system prompt context for the first message or as a virtual history
     const result = await chat.sendMessage([
       { text: `SYSTEM CONTEXT: ${systemPrompt}` },
-      { text: message }
+      { text: message },
     ]);
-    
+
     const response = await result.response;
     return response.text();
   },

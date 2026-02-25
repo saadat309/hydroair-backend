@@ -1,6 +1,8 @@
 import TranslateButton from './components/TranslateButton.jsx';
 import GenerateSeoButton from './components/GenerateSeoButton.jsx';
 import SyncButton from './components/SyncButton.jsx';
+import AiProductGenerator from './components/AiProductGenerator.jsx';
+import PrintReceiptButton from './components/PrintReceiptButton.jsx';
 import AuthLogo from './extensions/logo.svg';
 import MenuLogo from './extensions/logo.svg';
 import favicon from './extensions/favicon.png';
@@ -82,6 +84,16 @@ export default {
     app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
       name: 'generate-seo-button',
       Component: GenerateSeoButton,
+    });
+
+    app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
+      name: 'ai-product-generator',
+      Component: AiProductGenerator,
+    });
+
+    app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
+      name: 'print-receipt-button',
+      Component: PrintReceiptButton,
     });
   },
 };

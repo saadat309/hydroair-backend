@@ -584,6 +584,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       ['pending', 'confirmed', 'shipped', 'cancelled', 'returned', 'delivered']
     > &
       Schema.Attribute.DefaultTo<'pending'>;
+    phone: Schema.Attribute.String;
     postal_code: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'order_id'> & Schema.Attribute.Required;

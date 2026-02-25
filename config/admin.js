@@ -1,6 +1,10 @@
 module.exports = ({ env }) => ({
   auth: {
     secret: env('ADMIN_JWT_SECRET'),
+    sessions: {
+      maxRefreshTokenLifespan: 2592000, // 30 days
+      maxSessionLifespan: 2592000, // 30 days
+    },
   },
   apiToken: {
     salt: env('API_TOKEN_SALT'),
@@ -16,5 +20,9 @@ module.exports = ({ env }) => ({
   flags: {
     nps: env.bool('FLAG_NPS', false),
     promoteEE: env.bool('FLAG_PROMOTE_EE', false),
+  },
+  forgotPassword: {
+    from: env('EMAIL_FROM'),
+    replyTo: env('EMAIL_REPLY_TO'),
   },
 });

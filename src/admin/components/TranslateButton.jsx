@@ -19,20 +19,11 @@ const TranslateButton = () => {
   // In Strapi 5, locale is nested in plugins[i18n][locale]
   const currentLocale = query?.plugins?.i18n?.locale || query?.locale || 'en';
 
-  console.log('TranslateButton Debug:', { 
-    id, 
-    model, 
-    currentLocale, 
-    query 
-  });
+  // Supported types for sync/translate/seo
+  const supportedTypes = ['api::product.product', 'api::category.category', 'api::tag.tag'];
 
-  // Only show if not English
-  if (currentLocale === 'en' && !window.location.search.includes('force_translate=true')) {
-    return null;
-  }
-
-  // Hide for chatbot context as it doesn't need translation
-  if (model === 'api::chatbot-context.chatbot-context') {
+  // Only show if not English and is a supported type
+  if ((currentLocale === 'en' && !window.location.search.includes('force_translate=true')) || !supportedTypes.includes(model)) {
     return null;
   }
 

@@ -18,8 +18,11 @@ const SyncButton = () => {
 
   const currentLocale = query?.plugins?.i18n?.locale || query?.locale || 'en';
 
-  // Only show if not English
-  if (currentLocale === 'en') {
+  // Supported types for sync/translate/seo
+  const supportedTypes = ['api::product.product', 'api::category.category', 'api::tag.tag'];
+
+  // Only show if not English and is a supported type
+  if (currentLocale === 'en' || !supportedTypes.includes(model)) {
     return null;
   }
 

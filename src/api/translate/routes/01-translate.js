@@ -26,5 +26,13 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/translate/generate-ai-content',
+      handler: 'api::translate.translate-controller.generateAiContent',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
