@@ -10,7 +10,8 @@ module.exports = ({ strapi }) => ({
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemma-3-12b-it" });
+      const modelName = process.env.GEMINI_MODEL || "gemma-3-12b-it";
+      const model = genAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       return response.text().trim();
