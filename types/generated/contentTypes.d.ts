@@ -587,6 +587,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     phone: Schema.Attribute.String;
     postal_code: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    read: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     slug: Schema.Attribute.UID<'order_id'> & Schema.Attribute.Required;
     total_price: Schema.Attribute.BigInteger;
     updatedAt: Schema.Attribute.DateTime;
@@ -726,6 +727,7 @@ export interface ApiReviewReview extends Struct.CollectionTypeSchema {
         },
         number
       >;
+    read: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     review: Schema.Attribute.Text & Schema.Attribute.Required;
     slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -759,6 +761,7 @@ export interface ApiSubscriptionListSubscriptionList
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    read: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -793,6 +796,7 @@ export interface ApiSupportTicketSupportTicket
     message: Schema.Attribute.Text & Schema.Attribute.Required;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
+    read: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     subject: Schema.Attribute.String & Schema.Attribute.Required;
     ticketId: Schema.Attribute.String & Schema.Attribute.Unique;
     ticketStatus: Schema.Attribute.Enumeration<

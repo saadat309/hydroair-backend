@@ -34,5 +34,21 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/translate/dashboard-stats',
+      handler: 'api::translate.translate-controller.getUnreadCounts',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
+      path: '/translate/mark-as-read',
+      handler: 'api::translate.translate-controller.markAsRead',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

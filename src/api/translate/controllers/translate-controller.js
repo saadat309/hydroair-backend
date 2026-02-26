@@ -452,4 +452,53 @@ module.exports = {
       );
     }
   },
+
+  async getUnreadCounts(ctx) {
+    try {
+      const [orders, tickets, subscriptions, reviews] = await Promise.all([
+        strapi.documents("api::order.order").count({ filters: { read: false } }),
+        strapi.documents("api::support-ticket.support-ticket").count({ filters: { read: false } }),
+        strapi.documents("api::subscription-list.subscription-list").count({ filters: { read: false } }),
+        strapi.documents("api::review.review").count({ filters: { read: false } }),
+      ]);
+
+      return {
+        data: {
+          orders,
+          tickets,
+          subscriptions,
+          reviews
+        }
+      };
+    } catch (error) {
+      strapi.log.error("Unread counts error:", error);
+      return ctx.internalServerError("Failed to fetch unread counts");
+    }
+  },
+
+  async markAsRead(ctx) {
+    const { uid, documentId } = ctx.request.body;
+
+    if (!uid || !documentId) {
+      return ctx.badRequest('Missing parameters');
+    }
+
+    try {
+      const contentType = strapi.contentType(uid);
+      const hasDraftAndPublish = contentType.options?.draftAndPublish === true;
+
+      // Single atomic update
+      // In Strapi 5, updating with status: 'published' handles everything
+      await strapi.documents(uid).update({
+        documentId,
+        data: { read: true },
+        status: hasDraftAndPublish ? 'published' : undefined
+      });
+      
+      return { ok: true };
+    } catch (error) {
+      strapi.log.error(`[Read Status] Failed to mark ${uid} as read:`, error);
+      return ctx.internalServerError('Failed to update read status');
+    }
+  }
 };

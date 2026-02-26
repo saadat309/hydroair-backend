@@ -3,6 +3,8 @@ import GenerateSeoButton from './components/GenerateSeoButton.jsx';
 import SyncButton from './components/SyncButton.jsx';
 import AiProductGenerator from './components/AiProductGenerator.jsx';
 import PrintReceiptButton from './components/PrintReceiptButton.jsx';
+import AutoReadManager from './components/AutoReadManager.jsx';
+import DashboardWidget from './components/DashboardWidget.jsx';
 import AuthLogo from './extensions/logo.svg';
 import MenuLogo from './extensions/logo.svg';
 import favicon from './extensions/favicon.png';
@@ -11,6 +13,10 @@ export default {
   config: {
     auth: {
       logo: AuthLogo,
+      sessions: {
+        maxRefreshTokenLifespan: 2592000,
+        maxSessionLifespan: 2592000,
+      },
     },
     head: {
       favicon: favicon,
@@ -24,29 +30,32 @@ export default {
       en: {
         'app.components.LeftMenu.navbrand.title': 'HydroAir Technologies',
         'app.components.LeftMenu.navbrand.workplace': 'HydroAir Dashboard',
-        'Auth.form.welcome.title': 'Welcome to HydroAir',
-        'Auth.form.welcome.subtitle': 'Log in to your HydroAir account',
-        'HomePage.header.title': 'Welcome to HydroAir Technologies',
-        'HomePage.header.subtitle': 'Efficiently manage your air and water filtration systems.',
-      },
-      ru: {
-        'app.components.LeftMenu.navbrand.title': 'HydroAir Technologies',
-        'app.components.LeftMenu.navbrand.workplace': 'HydroAir Панель',
-        'Auth.form.welcome.title': 'Добро пожаловать в HydroAir',
-        'Auth.form.welcome.subtitle': 'Войдите в свою учетную запись HydroAir',
-        'HomePage.header.title': 'Добро пожаловать в HydroAir Technologies',
-        'HomePage.header.subtitle': 'Эффективно управляйте вашими системами фильтрации воздуха и воды.',
-      },
-      uz: {
-        'app.components.LeftMenu.navbrand.title': 'HydroAir Technologies',
-        'app.components.LeftMenu.navbrand.workplace': 'HydroAir Dashboard',
-        'Auth.form.welcome.title': 'HydroAir-ga xush kelibsiz',
-        'Auth.form.welcome.subtitle': 'HydroAir hisobingizga kiring',
-        'HomePage.header.title': 'HydroAir Technologies-ga xush kelibsiz',
-        'HomePage.header.subtitle': 'Havo va suv filtrlash tizimlarini samarali boshqaring.',
+        'activity-overview.title': 'Activity Overview',
       },
     },
   },
+
+  register(app) {
+    if (app.widgets) {
+      app.widgets.register({
+        name: 'activity-overview',
+        icon: () => (
+          <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="9" y1="21" x2="9" y2="9" />
+          </svg>
+        ),
+        title: {
+          id: 'activity-overview.title',
+          defaultMessage: 'Activity Overview',
+        },
+        component: async () => DashboardWidget,
+        id: 'activity-overview-widget',
+      });
+    }
+  },
+
   bootstrap(app) {
     // Manually set favicon
     const link = document.createElement('link');
@@ -94,6 +103,11 @@ export default {
     app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
       name: 'print-receipt-button',
       Component: PrintReceiptButton,
+    });
+
+    app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
+      name: 'auto-read-manager',
+      Component: AutoReadManager,
     });
   },
 };

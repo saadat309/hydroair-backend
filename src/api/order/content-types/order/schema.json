@@ -73,6 +73,10 @@
     },
     "phone": {
       "type": "string"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

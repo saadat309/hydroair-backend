@@ -48,6 +48,10 @@
       "type": "component",
       "component": "ticket.reply",
       "repeatable": true
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
