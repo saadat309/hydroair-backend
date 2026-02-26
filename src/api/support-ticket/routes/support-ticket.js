@@ -57,6 +57,14 @@ module.exports = {
       config: {
         auth: false,
       }
+    },
+    {
+      method: 'POST',
+      path: '/support-tickets/request-access',
+      handler: 'support-ticket.requestAccess',
+      config: {
+        auth: false,
+      }
     }
   ]
 };

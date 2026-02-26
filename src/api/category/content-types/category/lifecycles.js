@@ -23,6 +23,7 @@ module.exports = {
             documentId: documentId,
             data: {
               name: `${name} (${targetLocale})`,
+              slug: result.slug,
               locale: targetLocale,
             },
             status: 'draft'

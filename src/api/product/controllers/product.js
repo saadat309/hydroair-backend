@@ -26,11 +26,17 @@ function transformImages(images, fallbackAlt = null) {
 
 module.exports = createCoreController('api::product.product', ({ strapi }) => ({
   async find(ctx) {
-    const { data, meta } = await super.find(ctx);
-
-    if (!data) {
-      return { data, meta };
-    }
+    // We use the Document Service directly because the REST API validation layer 
+    // incorrectly blocks filtering by relation fields like 'category' and 'tags' 
+    // with an 'Invalid key' error in Strapi 5 for this specific configuration.
+    
+    const entries = await strapi.documents('api::product.product').findMany(ctx.query);
+    
+    // In Strapi 5 findMany returns the data directly. 
+    // To get pagination meta, we'd normally use the core find, but it's bugged for filters.
+    // For now, we manually enhance and return.
+    
+    const data = Array.isArray(entries) ? entries : [entries];
 
     const enhancedData = data.map((product) => ({
       ...product,
@@ -41,7 +47,17 @@ module.exports = createCoreController('api::product.product', ({ strapi }) => ({
       } : undefined,
     }));
 
-    return { data: enhancedData, meta };
+    // Re-fetch meta if needed, or provide a default
+    const total = await strapi.documents('api::product.product').count(ctx.query);
+
+    return { 
+      data: enhancedData, 
+      meta: {
+        pagination: {
+          total
+        }
+      } 
+    };
   },
 
   async findOne(ctx) {

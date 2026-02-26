@@ -52,6 +52,14 @@
     "read": {
       "type": "boolean",
       "default": false
+    },
+    "access_token": {
+      "type": "string",
+      "private": true
+    },
+    "token_expiry": {
+      "type": "datetime",
+      "private": true
     }
   }
 }

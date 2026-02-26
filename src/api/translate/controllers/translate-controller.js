@@ -135,6 +135,7 @@ module.exports = {
       if (uid === "api::product.product") {
         // ONLY sync non-translatable/common fields to avoid overwriting existing translations
         [
+          "slug",
           "SKU",
           "price",
           "old_price",
@@ -185,8 +186,9 @@ module.exports = {
 
         if (sourceEntry.reviews)
           syncedFields.reviews = sourceEntry.reviews.map((r) => r.documentId);
-      } else {
-        // For Categories/Tags, currently relations are independent as per your request
+      } else if (uid === "api::category.category" || uid === "api::tag.tag") {
+        // Sync slug to remain same across locales
+        if (sourceEntry.slug) syncedFields.slug = sourceEntry.slug;
       }
 
       const result = await strapi.documents(uid).update({
@@ -288,14 +290,15 @@ module.exports = {
       // Determine path prefix based on UID
       let canonicalUrl = null;
       if (entry.slug) {
+        const localePrefix = `/${locale}`;
         if (uid === "api::product.product") {
-          canonicalUrl = `${frontendUrl}/products/${entry.slug}`;
+          canonicalUrl = `${frontendUrl}${localePrefix}/products/${entry.slug}`;
         } else if (uid.includes("category")) {
-          // Matches your pattern: ?category=slug
-          canonicalUrl = `${frontendUrl}/products?category=${entry.slug}`;
+          // Matches your pattern: /locale/products?category=slug
+          canonicalUrl = `${frontendUrl}${localePrefix}/products?category=${entry.slug}`;
         } else if (uid.includes("tag")) {
-          // Matches your pattern: ?tag=slug
-          canonicalUrl = `${frontendUrl}/products?tag=${entry.slug}`;
+          // Matches your pattern: /locale/products?tag=slug
+          canonicalUrl = `${frontendUrl}${localePrefix}/products?tag=${entry.slug}`;
         }
       }
 
