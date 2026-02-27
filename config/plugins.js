@@ -8,16 +8,16 @@ module.exports = ({ env }) => ({
       provider: "nodemailer",
       providerOptions: {
         host: env("SMTP_HOST"),
-        port: env.int("SMTP_PORT",),
-        secure: env.bool("SMTP_SECURE",),
+        port: env.int("SMTP_PORT", 587),
+        secure: env.bool("SMTP_SECURE", false),
         auth: {
-          user: env("GMAIL_USER"),
-          pass: env("GMAIL_PASS"),
+          user: env("SMTP_USER"),
+          pass: env("SMTP_PASS"),
         },
       },
       settings: {
-        defaultFrom: env("EMAIL_FROM"),
-        defaultReplyTo: env("EMAIL_REPLY_TO"),
+        defaultFrom: env("SMTP_FROM", "noreply@hydroairtechnologies.com"),
+        defaultReplyTo: env("SMTP_REPLY_TO", "noreply@hydroairtechnologies.com"),
       },
     },
   },
