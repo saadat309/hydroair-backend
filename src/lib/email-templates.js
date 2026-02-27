@@ -154,9 +154,10 @@ module.exports = {
     const isFromAdmin = reply.author === 'admin';
     const recipientName = isFromAdmin ? ticket.name : 'Admin';
     const senderName = isFromAdmin ? 'HydroAir Support' : ticket.name;
-    const frontendUrl = process.env.FRONTEND_URL;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://hydroairtechnologies.com';
+    const lang = ticket.language || 'en';
     const link = isFromAdmin 
-      ? `${frontendUrl}/support/ticket/${ticket.ticketId}?token=${ticket.access_token}`
+      ? `${frontendUrl}/${lang}/support/ticket/${ticket.ticketId}?token=${ticket.access_token}`
       : `${process.env.STRAPI_ADMIN_BACKEND_URL}/admin/content-manager/collection-types/api::support-ticket.support-ticket/${ticket.documentId}`;
 
     return {

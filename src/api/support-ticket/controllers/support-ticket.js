@@ -71,8 +71,9 @@ module.exports = createCoreController('api::support-ticket.support-ticket', ({ s
       });
 
       // Send Email
-      const frontendUrl = process.env.FRONTEND_URL;
-      const magicLink = `${frontendUrl}/support/ticket/${ticket.ticketId}?token=${token}`;
+      const frontendUrl = process.env.FRONTEND_URL || 'https://hydroairtechnologies.com';
+      const lang = ticket.language || 'en';
+      const magicLink = `${frontendUrl}/${lang}/support/ticket/${ticket.ticketId}?token=${token}`;
 
       strapi.log.info(`[Support] Sending magic link for ticket ${ticket.ticketId} to ${email}`);
 
