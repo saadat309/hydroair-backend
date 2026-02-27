@@ -113,6 +113,8 @@ module.exports = createCoreController('api::support-ticket.support-ticket', ({ s
         return ctx.badRequest('Ticket ID and Token are required');
       }
 
+      strapi.log.info(`[Support] Verifying ticket: ${ticketId}, token received: ${token}`);
+
       const ticket = await strapi.documents('api::support-ticket.support-ticket').findFirst({
         filters: { 
           ticketId: { $eq: ticketId.toUpperCase() },
@@ -121,6 +123,8 @@ module.exports = createCoreController('api::support-ticket.support-ticket', ({ s
         },
         populate: ['conversation']
       });
+
+      strapi.log.info(`[Support] Ticket query result:`, ticket ? 'Found' : 'Not found');
 
       if (!ticket) {
         return ctx.forbidden('Invalid or expired access token');
